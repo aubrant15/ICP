@@ -1,154 +1,150 @@
+
 'use strict';
-process.env.NODE_ENV = 'test';
+// process.env.NODE_ENV = 'development';
 
-const base = process.env.PWD;
-const config = require(base + '/config'),
-    logger = require('mocha-logger'),
-    mongoose = require('mongoose'),
-    Org = require(base + '/models/org'),
-    orgs = require(base + '/controllers/org'),
-    should = require('should'),
-    testUtils = require(base + '/test/utils');
+if (!process.env.PWD) {
+  process.env.PWD = process.cwd();
+}
+let base = process.env.PWD;
+let config = require(base + '/config');
+let logger = require('mocha-logger');
+let mongoose = require('mongoose');
+let Org = require(base + '/models/org');
+let orgC = require(base + '/controllers/org');
+let mocha = require('mocha');
+let testUtils = require(base + '/test/utils');
+let debug = require('debug');
 
-describe("Org api", () => {
+debug.log('Entered Org Runner');
+describe('Org api test suite', function () {
   let id, dummyOrg;
- console.log("Im in 1");
-  before((done) => {
-    console.log("Im in 2");
-      mongoose.connect(config.testDb, () => {
-          console.log('Connected to: '+ config.testDb);
-          done();
-      });
-      console.log("Im in 3");
-      dummyOrg = new Org({ 
-        "tenatid" : Object("59e3d8f09c26d7e9a21c39aa"), 
-        "name" : "Test Hospital", 
-        "type" : "Provider", 
-        "POC" : "Jack Ryan", 
-        "account_type" : "p3", 
-        "date_active" : Date("2016-04-30T00:00:00.000+0000"), 
-        "address" : {
-            "type" : "work", 
-            "Address1" : "123 Street One", 
-            "Address2" : "Suite 100", 
-            "City" : "Minneapolis", 
-            "State" : "MN", 
-            "Postal Code" : "55418", 
-            "Country" : "55418"
-        }, 
-        "Phone1" : "000-000-0000", 
-        "Phone2" : "000-000-0000"
-      });
-      console.log("Im in 4");
-      dummyOrg.save((err, org) => {
-          if (err) { console.log(err); }
-          console.log("Im in 1.1");
-          id = org._id;
-      });
+  before(function (done) {
+    debug.log('Entered Org Before');
+    mongoose.connect(config.localDb, function () {
+      console.log('Connected to: ' + config.testDb);
+    });
+    debug.log('DummyOrg  after connections');
+    dummyOrg = new Org({
+      'tenatid': Object('59e3d8f09c26d7e9a21c39aa'),
+      'name': 'Test Hospital',
+      'type': 'Provider',
+      'POC': 'Jack Ryan',
+      'account_type': 'p3',
+      'date_active': new Date('2016-04-30T00:00:00.000+0000'),
+      'address': {
+        'type': 'work',
+        'Address1': '123 Street One',
+        'Address2': 'Suite 100',
+        'City': 'Minneapolis',
+        'State': 'MN',
+        'Postal Code': '55418',
+        'Country': '55418'
+      },
+      'Phone1': '000-000-0000',
+      'Phone2': '000-000-0000'
+    });
+    debug.log('DummyOrg before save');
+    dummyOrg.save(function (err, org) {
+      if (err) { console.log(err); }
+      id = org._id;
+      debug.log('DummyOrg id:' + id);
+      done();
+    });
   });
-  
-  console.log("Im in 5");
-  describe("Create Org", () => {
-      it("should create a new org", (done) => {
-        let req = {
-          body : {"tenatid" : Object("59e3d8f09c26d7e9a21c39aa"),"name" : "Test Hospital 2","type" : "Provider","POC" : "Jack Ryan","account_type" : "p3","date_active" : Date("2016-04-30T00:00:00.000+0000"),"address" : {"type" : "work","Address1" : "123 Street One","Address2" : "Suite 100","City" : "Minneapolis", "State" : "MN", "Postal Code" : "55418","Country" : "55418"}, "Phone1" : "000-000-0000", "Phone2" : "000-000-0000"}
-        };
-        console.log("Im in 6");
-        let res = testUtils.responseValidatorAsync(200, (org) => {
-          org.should.have.property('name');
-          org.title.should.equal('Test Hospital 2');
-          done();
-        });
-        orgs.postOrg(req, res);
-      });
+  after(function (done) {
+    debug.log('Entered Org After');
+    Org.remove({}, function (err) {
+      if (err) { console.log(err); }
+    });
+    mongoose.disconnect(done);
   });
-
-
-  describe("GET Orgs", () => {
-    console.log("Im in 7");
-      it("should respond with an array of orgs", (done) => {
-       console.log("Im in 8");
-        let req = {};
-        let res = testUtils.responseValidatorAsync(200, (orgs) => {
-          //what should the length of th array be?
-          orgs.length.should.equal(9); 
-          orgs[0].should.have.property('namefgfgf');
-          done();
-        });
-       orgs.getOrgs(req, res);
+  describe('Create Org', function () {
+    debug.log('Entered Create Org Describe');
+    it('should create a new org', function (done) {
+      debug.log('Entered Create Org It');
+      let req = {
+        body: {'tenatid': Object('59e3d8f09c26d7e9a21c39aa'), 'name': 'Test Hospital 2', 'type': 'Provider', 'POC': 'Jack Ryan', 'account_type': 'p3', 'date_active': Date('2016-04-30T00:00:00.000+0000'), 'address': {'type': 'work', 'Address1': '123 Street One', 'Address2': 'Suite 100', 'City': 'Minneapolis', 'State': 'MN', 'Postal Code': '55418', 'Country': '55418'}, 'Phone1': '000-000-0000', 'Phone2': '000-000-0000'}
+      };
+      let res = testUtils.responseValidatorAsync(200, function (org) {
+        org.should.have.property('name');
+        org.title.should.equal('Test Hospital 2');
+        done();
       });
+      orgC.postOrg(req, res);
+    });
   });
 
-  describe("GET Org", () => {
-      it("should get a org by id", (done) => {
-        let req = {
-          params : {id: id}
-        };
-
-        let res = testUtils.responseValidatorAsync(200, (org) => {
-           org.should.have.property('name');
-          org.title.should.equal('Test Hospital');
-          done();
-        });
-
-        orgs.getOrg(req, res);
+  describe('GET Orgs', function () {
+    it('should respond with an array of orgs', function (done) {
+      debug.log('Entered Get Orgs It');
+      let req = {};
+      let res = testUtils.responseValidatorAsync(200, function (orgs) {
+        // what should the length of th array be?
+        orgs.length.should.equal(9);
+        orgs[0].should.have.property('namefgfgf');
+        done();
       });
-
-      it("should throw an error for invalid id", (done) => {
-        let req = {
-          params : {id: '23545'}
-        };
-
-        let res = testUtils.responseValidatorAsync(500, (err) => {
-          if(err) {console.log(err);}
-          done();
-        });
-
-        orgs.getOrg(req, res);
-      });
+      orgC.getOrgs(req, res);
+    });
   });
 
-  describe("Update Org", () => {
-      it("should update an existing org", (done) => {
-        let req = {
-          params: {id: id},
-          body: {
-            'name': 'New Test org'
-          }
-        };
+  describe('GET Org', function () {
+    it('should get a org by id', function (done) {
+      let req = {
+        params: {id: id}
+      };
 
-        let res = testUtils.responseValidatorAsync(200, (org) => {
-          org.should.have.property('name');
-          org.title.should.equal('New Test Org');
-          done();
-        });
-
-        orgs.putOrg(req, res);
+      let res = testUtils.responseValidatorAsync(200, function (org) {
+        org.should.have.property('name');
+        org.title.should.equal('Test Hospital');
+        done();
       });
+      orgC.getOrg(req, res);
+    });
+
+    it('should throw an error for invalid id', function (done) {
+      let req = {
+        params: {id: '23545'}
+      };
+
+      let res = testUtils.responseValidatorAsync(500, function (err) {
+        if (err) { console.log(err); }
+        done();
+      });
+      orgC.getOrg(req, res);
+    });
   });
 
-  describe("Delete Org", () => {
-      it("should delete an existing org", (done) => {
-        let req = {
-          params: {id: id},
-        };
+  describe('Update Org', function () {
+    it('should update an existing org', function (done) {
+      let req = {
+        params: {id: id},
+        body: {
+          'name': 'New Test org'
+        }
+      };
 
-        let res = testUtils.responseValidatorAsync(200, (obj) => {
-          obj.should.have.property('deleted');
-          obj.removed.should.equal(true);
-          done();
-        });
-
-        orgs.deleteOrg(req, res);
+      let res = testUtils.responseValidatorAsync(200, function (org) {
+        org.should.have.property('name');
+        org.title.should.equal('New Test Org');
+        done();
       });
+      orgC.putOrg(req, res);
+    });
   });
 
-  after((done) => {
-      Org.remove({}, (err) => {
-        if(err) {console.log(err);}
+  describe('Delete Org', function () {
+    it('should delete an existing org', function (done) {
+      let req = {
+        params: {id: id}
+      };
+
+      let res = testUtils.responseValidatorAsyncresponseValidatorAsync(200, function (obj) {
+        obj.should.have.property('deleted');
+        obj.removed.should.equal(true);
+        done();
       });
-
-      mongoose.disconnect(done);
+      orgC.deleteOrg(req, res);
+    });
   });
-
 });

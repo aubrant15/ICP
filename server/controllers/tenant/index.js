@@ -1,7 +1,11 @@
 'use strict';
 
-const base = process.env.PWD;
-const Tenant = require(base + '/models/tenant');
+
+if (!process.env.PWD) {
+    process.env.PWD = process.cwd();
+}
+let base = process.env.PWD;
+let Tenant = require(base + '/models/tenant');
 
 var home = function(req, res, next) {
   res.render('index', { title: 'Aubrant Integrated Care Platform - This is Tenant' });

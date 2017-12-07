@@ -1,11 +1,13 @@
 'use strict';
 
-const express = require('express'),
- router = express.Router(),
- user = require('../../controllers/user'),
- tenant = require('../../controllers/tenant'),
- org = require('../../controllers/org');
+let express = require('express');
+let router = express.Router();
+let user = require('../../controllers/user');
+let tenant = require('../../controllers/tenant');
+let org = require('../../controllers/org');
+let debug = require('debug');
 
+debug.log('setting up endpoints');
 router.get('/user', user.home);
 router.post('/user/create', user.postUser);
 router.get('/user/:id', user.getUser);
@@ -27,6 +29,5 @@ router.get('/orgs', org.getOrgs);
 router.get('/org/:id', org.getOrg);
 router.delete('/org/:id', org.deleteOrg);
 router.put('/org/:id', org.putOrg);
-
 
 module.exports = router;
