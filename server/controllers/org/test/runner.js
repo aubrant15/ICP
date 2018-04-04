@@ -7,14 +7,18 @@ if (!process.env.PWD) {
 }
 let base = process.env.PWD;
 let config = require(base + '/config');
-let logger = require('mocha-logger');
 let mongoose = require('mongoose');
 let Org = require(base + '/models/org');
 let orgC = require(base + '/controllers/org');
 let mocha = require('mocha');
+let chai = require('chai');
+let chaiHttp = require('chai-http');
+let server = require('../app.js');
+let should = chai.should();
 let testUtils = require(base + '/test/utils');
 let debug = require('debug');
 
+chai.use(chaiHttp);
 debug.log('Entered Org Runner');
 describe('Org api test suite', function () {
   let id, dummyOrg;
@@ -58,19 +62,22 @@ describe('Org api test suite', function () {
     });
     mongoose.disconnect(done);
   });
-  describe('Create Org', function () {
+  describe('Create Org /postOrg', function () {
     debug.log('Entered Create Org Describe');
     it('should create a new org', function (done) {
       debug.log('Entered Create Org It');
-      let req = {
+      let org = {
         body: {'tenatid': Object('59e3d8f09c26d7e9a21c39aa'), 'name': 'Test Hospital 2', 'type': 'Provider', 'POC': 'Jack Ryan', 'account_type': 'p3', 'date_active': Date('2016-04-30T00:00:00.000+0000'), 'address': {'type': 'work', 'Address1': '123 Street One', 'Address2': 'Suite 100', 'City': 'Minneapolis', 'State': 'MN', 'Postal Code': '55418', 'Country': '55418'}, 'Phone1': '000-000-0000', 'Phone2': '000-000-0000'}
       };
-      let res = testUtils.responseValidatorAsync(200, function (org) {
-        org.should.have.property('name');
-        org.title.should.equal('Test Hospital 2');
-        done();
-      });
-      orgC.postOrg(req, res);
+      chai.request(server)
+        .post('/book')
+        .send(org)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('name').eqaul('Test Hospital 2');
+          done();
+        });
     });
   });
 
